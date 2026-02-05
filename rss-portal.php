@@ -6,7 +6,7 @@
 	margin-inline: auto;
 }
 
-/* Pattertn
+/* Pattern
 ====================================== */
 /* .rss-wrapper（flex／横組み）
 ------------------------------------- */
@@ -202,8 +202,13 @@ screen and (min-width: 744px) {
 
     // ローカルストレージから非表示リストを取得
     function getHiddenArticles() {
-      const hidden = localStorage.getItem('rss-portal-hidden');
-      return hidden ? JSON.parse(hidden) : [];
+      try {
+        const hidden = localStorage.getItem('rss-portal-hidden');
+        return hidden ? JSON.parse(hidden) : [];
+      } catch (e) {
+        localStorage.removeItem('rss-portal-hidden');
+        return [];
+      }
     }
 
     // 記事を非表示リストに追加
@@ -217,8 +222,13 @@ screen and (min-width: 744px) {
 
     // Likeした記事を記録
     function getLikedArticles() {
-      const liked = localStorage.getItem('rss-portal-liked');
-      return liked ? JSON.parse(liked) : [];
+      try {
+        const liked = localStorage.getItem('rss-portal-liked');
+        return liked ? JSON.parse(liked) : [];
+      } catch (e) {
+        localStorage.removeItem('rss-portal-liked');
+        return [];
+      }
     }
 
     function markAsLiked(articleId) {
@@ -230,7 +240,10 @@ screen and (min-width: 744px) {
     }
 
     fetch(API_URL + '/articles')
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error(res.status + ' ' + res.statusText);
+        return res.json();
+      })
       .then(data => {
         document.getElementById('rss-loading').style.display = 'none';
         const wrapper = document.getElementById('rss-wrapper');
@@ -256,23 +269,54 @@ screen and (min-width: 744px) {
           const li = document.createElement('li');
           li.className = 'rss-slide';
           li.id = 'article-' + article.id;
-          li.innerHTML = `
-            <h4 class="rss-title">
-              <a href="${article.link}" target="_blank" onclick="trackClick(${article.id})">${article.title}</a>
-            </h4>
-            <div class="rss-meta-fields">
-              <time class="rss-date" datetime="${article.published_at}">${rssDate}</time> | 
-              <span class="rss-feedname">${article.feed_name}</span> 
-              <span class="rss-score rss-score-${article.score}">${article.score}</span>
-            </div>
-            <p class="rss-summary">
-            ${article.summary || ''}
-              <label class="rss-feedback">
-                <a class="btn-like ${isLiked ? 'is-liked' : ''}" onclick="sendFeedback(${article.id}, 'like', this)">${isLiked ? '' : ''}</a>
-                <a class="btn-dislike" onclick="sendFeedback(${article.id}, 'dislike', this)"></a>
-              </label>
-            </p>
-        `;
+
+          const h4 = document.createElement('h4');
+          h4.className = 'rss-title';
+          const titleLink = document.createElement('a');
+          titleLink.href = article.link;
+          titleLink.target = '_blank';
+          titleLink.textContent = article.title;
+          titleLink.addEventListener('click', function() { trackClick(article.id); });
+          h4.appendChild(titleLink);
+
+          const metaDiv = document.createElement('div');
+          metaDiv.className = 'rss-meta-fields';
+          const timeEl = document.createElement('time');
+          timeEl.className = 'rss-date';
+          timeEl.setAttribute('datetime', article.published_at);
+          timeEl.textContent = rssDate;
+          const feedSpan = document.createElement('span');
+          feedSpan.className = 'rss-feedname';
+          feedSpan.textContent = article.feed_name;
+          const scoreSpan = document.createElement('span');
+          scoreSpan.className = 'rss-score rss-score-' + article.score;
+          scoreSpan.textContent = article.score;
+          metaDiv.appendChild(timeEl);
+          metaDiv.appendChild(document.createTextNode(' | '));
+          metaDiv.appendChild(feedSpan);
+          metaDiv.appendChild(document.createTextNode(' '));
+          metaDiv.appendChild(scoreSpan);
+
+          const summaryP = document.createElement('p');
+          summaryP.className = 'rss-summary';
+          summaryP.appendChild(document.createTextNode(article.summary || ''));
+          const feedbackLabel = document.createElement('label');
+          feedbackLabel.className = 'rss-feedback';
+          const btnLike = document.createElement('a');
+          btnLike.className = 'btn-like' + (isLiked ? ' is-liked' : '');
+          btnLike.textContent = isLiked ? '' : '';
+          btnLike.addEventListener('click', function() { sendFeedback(article.id, 'like', this); });
+          const btnDislike = document.createElement('a');
+          btnDislike.className = 'btn-dislike';
+          btnDislike.textContent = '';
+          btnDislike.addEventListener('click', function() { sendFeedback(article.id, 'dislike', this); });
+          feedbackLabel.appendChild(btnLike);
+          feedbackLabel.appendChild(btnDislike);
+          summaryP.appendChild(feedbackLabel);
+
+          li.appendChild(h4);
+          li.appendChild(metaDiv);
+          li.appendChild(summaryP);
           wrapper.appendChild(li);
         });
       })
@@ -298,6 +342,10 @@ screen and (min-width: 744px) {
   }
 
   function sendFeedback(articleId, type, button) {
+    // 楽観的UI更新の前の状態を保存
+    const prevButtonClass = button.className;
+    const prevButtonText = button.textContent;
+
     fetch('/api/rss-portal/feedback', {
       method: 'POST',
       headers: {
@@ -307,11 +355,11 @@ screen and (min-width: 744px) {
         article_id: articleId,
         feedback: type
       })
-    }).then(() => {
+    }).then(res => {
+      if (!res.ok) throw new Error(res.status + ' ' + res.statusText);
       if (type === 'like') {
         // Likeの場合：ボタンの見た目を変更
-        const liked = localStorage.getItem('rss-portal-liked');
-        const likedList = liked ? JSON.parse(liked) : [];
+        const likedList = getLikedArticles();
         if (!likedList.includes(articleId)) {
           likedList.push(articleId);
           localStorage.setItem('rss-portal-liked', JSON.stringify(likedList));
@@ -320,8 +368,7 @@ screen and (min-width: 744px) {
         button.textContent = '';
       } else {
         // Dislikeの場合：記事を非表示にして、ローカルストレージに記録
-        const hidden = localStorage.getItem('rss-portal-hidden');
-        const hiddenList = hidden ? JSON.parse(hidden) : [];
+        const hiddenList = getHiddenArticles();
         if (!hiddenList.includes(articleId)) {
           hiddenList.push(articleId);
           localStorage.setItem('rss-portal-hidden', JSON.stringify(hiddenList));
@@ -333,6 +380,26 @@ screen and (min-width: 744px) {
           articleDiv.style.opacity = '0';
           setTimeout(() => articleDiv.remove(), 300);
         }
+      }
+    }).catch(err => {
+      console.error('Feedback failed:', err);
+      // UIを元に戻す
+      button.className = prevButtonClass;
+      button.textContent = prevButtonText;
+      // Dislikeで非表示にした場合の復元
+      if (type === 'dislike') {
+        const articleDiv = document.getElementById('article-' + articleId);
+        if (articleDiv) {
+          articleDiv.style.opacity = '1';
+        }
+      }
+      // localStorage からも取り消す
+      if (type === 'like') {
+        const likedList = getLikedArticles().filter(id => id !== articleId);
+        localStorage.setItem('rss-portal-liked', JSON.stringify(likedList));
+      } else {
+        const hiddenList = getHiddenArticles().filter(id => id !== articleId);
+        localStorage.setItem('rss-portal-hidden', JSON.stringify(hiddenList));
       }
     });
   }

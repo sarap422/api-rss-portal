@@ -3,13 +3,14 @@ RSS Portal RSSフィード取得モジュール
 feedparserを使用してRSSフィードから記事を取得
 """
 
+import calendar
 import hashlib
 import re
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
-from time import mktime
 
 import feedparser
+import requests as http_requests
 
 from config import DEFAULT_FEEDS, OPML_FILE, MAX_ARTICLES_PER_FETCH
 from database import (
@@ -29,12 +30,16 @@ def generate_guid(link: str, title: str) -> str:
 
 
 def parse_published_date(entry) -> Optional[str]:
-    """記事の公開日時をISO形式で返す"""
+    """記事の公開日時をISO形式で返す（UTC）"""
     try:
         if hasattr(entry, 'published_parsed') and entry.published_parsed:
-            return datetime.fromtimestamp(mktime(entry.published_parsed)).isoformat()
+            return datetime.fromtimestamp(
+                calendar.timegm(entry.published_parsed), tz=timezone.utc
+            ).isoformat()
         if hasattr(entry, 'updated_parsed') and entry.updated_parsed:
-            return datetime.fromtimestamp(mktime(entry.updated_parsed)).isoformat()
+            return datetime.fromtimestamp(
+                calendar.timegm(entry.updated_parsed), tz=timezone.utc
+            ).isoformat()
     except Exception:
         pass
     return None
@@ -70,8 +75,10 @@ def fetch_single_feed(feed_url: str, feed_name: str, max_items: int = 20) -> lis
     articles = []
     
     try:
-        feed = feedparser.parse(feed_url)
-        
+        response = http_requests.get(feed_url, timeout=30)
+        response.raise_for_status()
+        feed = feedparser.parse(response.content)
+
         if feed.bozo and not feed.entries:
             print(f"  [WARN] Parse error: {feed_name}")
             return articles

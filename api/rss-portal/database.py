@@ -3,11 +3,14 @@ RSS Portal データベース操作
 SQLiteを使用して記事とフィードバックを保存
 """
 
+import logging
 import sqlite3
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional
 from contextlib import contextmanager
+
+logger = logging.getLogger(__name__)
 
 from config import DATABASE_PATH, ARTICLE_RETENTION_DAYS
 
@@ -75,6 +78,7 @@ def get_connection():
     """データベース接続のコンテキストマネージャー"""
     conn = sqlite3.connect(str(DATABASE_PATH))
     conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA foreign_keys = ON")
     try:
         yield conn
     finally:
@@ -98,16 +102,19 @@ def insert_article(
     link: str,
     summary: str = "",
     published_at: Optional[str] = None
-) -> int:
-    """新しい記事を挿入"""
+) -> Optional[int]:
+    """新しい記事を挿入（重複時はNoneを返す）"""
     with get_connection() as conn:
         cursor = conn.cursor()
-        cursor.execute("""
-            INSERT INTO articles (guid, feed_name, title, link, summary, published_at)
-            VALUES (?, ?, ?, ?, ?, ?)
-        """, (guid, feed_name, title, link, summary, published_at))
-        conn.commit()
-        return cursor.lastrowid
+        try:
+            cursor.execute("""
+                INSERT INTO articles (guid, feed_name, title, link, summary, published_at)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, (guid, feed_name, title, link, summary, published_at))
+            conn.commit()
+            return cursor.lastrowid
+        except sqlite3.IntegrityError:
+            return None
 
 
 def update_article_score(article_id: int, score: int, summary: str = ""):
@@ -162,21 +169,25 @@ def get_article_by_id(article_id: int) -> Optional[dict]:
 
 
 def cleanup_old_articles() -> int:
-    """古い記事を削除"""
+    """古い記事を削除（トランザクションで一貫性を保証）"""
     cutoff = (datetime.now() - timedelta(days=ARTICLE_RETENTION_DAYS)).isoformat()
     with get_connection() as conn:
-        cursor = conn.cursor()
-        # まず関連するfeedbackを削除
-        cursor.execute("""
-            DELETE FROM feedback WHERE article_id IN (
-                SELECT id FROM articles WHERE fetched_at < ?
-            )
-        """, (cutoff,))
-        # 次に記事を削除
-        cursor.execute("DELETE FROM articles WHERE fetched_at < ?", (cutoff,))
-        deleted = cursor.rowcount
-        conn.commit()
-        return deleted
+        try:
+            cursor = conn.cursor()
+            # まず関連するfeedbackを削除
+            cursor.execute("""
+                DELETE FROM feedback WHERE article_id IN (
+                    SELECT id FROM articles WHERE fetched_at < ?
+                )
+            """, (cutoff,))
+            # 次に記事を削除
+            cursor.execute("DELETE FROM articles WHERE fetched_at < ?", (cutoff,))
+            deleted = cursor.rowcount
+            conn.commit()
+            return deleted
+        except Exception:
+            conn.rollback()
+            raise
 
 
 def get_articles_count() -> dict:
@@ -195,11 +206,14 @@ def get_articles_count() -> dict:
 # ========== フィードバック関連 ==========
 
 def add_feedback(article_id: int, feedback_type: str) -> bool:
-    """フィードバックを追加（like/dislike）"""
-    if feedback_type not in ('like', 'dislike', 'click'):  # click追加
+    """フィードバックを追加（like/dislike/click）"""
+    if feedback_type not in ('like', 'dislike', 'click'):
         return False
     with get_connection() as conn:
         cursor = conn.cursor()
+        cursor.execute("SELECT id FROM articles WHERE id = ?", (article_id,))
+        if cursor.fetchone() is None:
+            return False
         cursor.execute("""
             INSERT INTO feedback (article_id, feedback_type)
             VALUES (?, ?)
@@ -284,17 +298,20 @@ def add_feed(name: str, url: str, category: str = "") -> bool:
 
 def import_feeds_from_opml(opml_path: Path) -> int:
     """OPMLファイルからフィードをインポート"""
-    import xml.etree.ElementTree as ET
-    
+    try:
+        import defusedxml.ElementTree as ET
+    except ImportError:
+        import xml.etree.ElementTree as ET
+
     if not opml_path.exists():
-        print(f"[WARN] OPML file not found: {opml_path}")
+        logger.warning("OPML file not found: %s", opml_path)
         return 0
-    
+
     try:
         tree = ET.parse(opml_path)
         root = tree.getroot()
     except Exception as e:
-        print(f"[ERROR] Failed to parse OPML: {e}")
+        logger.error("Failed to parse OPML: %s", e)
         return 0
     
     imported = 0
@@ -308,7 +325,7 @@ def import_feeds_from_opml(opml_path: Path) -> int:
         if xml_url:
             if add_feed(title, xml_url, category):
                 imported += 1
-                print(f"  [+] {title}")
+                logger.info("Imported feed: %s", title)
         
         # 子要素を再帰的に処理
         for child in outline:

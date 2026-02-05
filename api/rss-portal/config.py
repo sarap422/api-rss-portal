@@ -21,6 +21,9 @@ OUTPUT_JSON = OUTPUT_DIR / "articles.json"
 OPENROUTER_API_KEY = "sk-or-v1-your-api-key-here"
 OPENROUTER_MODEL = "google/gemini-2.0-flash-001"  # 安価で高速
 
+# サイト設定
+SITE_URL = "https://your-site.com"
+
 # ユーザーの興味分野（AIスコアリングに使用）
 USER_INTERESTS = """
 【技術分野】
@@ -67,8 +70,8 @@ USER_DISLIKES = """
 
 # RSSフィード設定（OPMLが無い場合のデフォルト）
 DEFAULT_FEEDS = [
-    {"name": "Zenn トレンド", "url": "https://zenn.dev/feed", "category": "tech"},
     {"name": "Qiita 人気", "url": "https://qiita.com/popular-items/feed", "category": "tech"},
+    {"name": "Zenn トレンド", "url": "https://zenn.dev/feed", "category": "tech"},
 ]
 
 # OPMLファイルパス（Feedlyからエクスポート）
@@ -82,10 +85,10 @@ ARTICLE_RETENTION_DAYS = 14    # 記事を保持する日数
 MAX_DISPLAY_PER_FEED = 10      # 同一フィードから表示する最大記事数
 
 # Cron実行間隔（参考情報）
-FETCH_INTERVAL_HOURS = 6  # 6時間ごとに取得
+FETCH_INTERVAL_HOURS = 6       # 6時間ごとに取得
 
 # CORS設定
 CORS_ORIGINS = [
-    "https://your-site.com",
+    SITE_URL,                  # サイト設定
     "http://localhost:3000",
 ]

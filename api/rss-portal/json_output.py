@@ -38,7 +38,7 @@ def generate_output_json(min_score: int = None, limit: int = 100) -> dict:
             "feed_name": article['feed_name'],
             "summary": article['summary'][:200] if article['summary'] else "",
             "score": article['ai_score'],
-            "summary": article['score_summary'] or "",
+            "score_summary": article['score_summary'] or "",
             "published_at": article['published_at'],
             "fetched_at": article['fetched_at'],
             "likes": article['likes'],

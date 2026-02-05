@@ -48,7 +48,6 @@ class FeedbackRequest(BaseModel):
 
 
 class RefreshRequest(BaseModel):
-    fetch_limit: Optional[int] = 100
     score_limit: Optional[int] = 50
 
 
@@ -117,7 +116,7 @@ async def refresh_feeds(
         request = RefreshRequest()
     
     # バックグラウンドで実行
-    background_tasks.add_task(run_refresh, request.fetch_limit, request.score_limit)
+    background_tasks.add_task(run_refresh, request.score_limit)
     
     return {
         "status": "started",
@@ -125,7 +124,7 @@ async def refresh_feeds(
     }
 
 
-async def run_refresh(fetch_limit: int, score_limit: int):
+async def run_refresh(score_limit: int):
     """リフレッシュ処理の実際の実行"""
     try:
         # 1. RSSフィード取得
@@ -166,7 +165,7 @@ async def get_stats():
 def run_cli_refresh():
     """CLI用のリフレッシュコマンド（Cronから呼び出し）"""
     import asyncio
-    asyncio.run(run_refresh(100, 50))
+    asyncio.run(run_refresh(50))
 
 
 if __name__ == "__main__":

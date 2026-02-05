@@ -18,7 +18,6 @@
             <outline type="rss" text="tedate" title="tedate" xmlUrl="https://tedate.jp/feed" htmlUrl="https://tedate.jp/"/>
             <outline type="rss" text="BRISK" title="BRISK" xmlUrl="https://b-risk.jp/blog/feed/" htmlUrl="https://b-risk.jp"/>
             <outline type="rss" text="株式会社オンズ" title="株式会社オンズ" xmlUrl="https://on-ze.com/feed" htmlUrl="https://on-ze.com"/>
-            <outline type="rss" text="SONICMOOV LAB" title="SONICMOOV LAB" xmlUrl="https://lab.sonicmoov.com/feed/" htmlUrl="https://lab.sonicmoov.com/"/>
             
             <!-- 日本語 - AI/SEO -->
             <outline type="rss" text="ジコログ" title="ジコログ" xmlUrl="https://self-development.info/feed/" htmlUrl="https://self-development.info"/>
@@ -28,7 +27,6 @@
             <outline type="rss" text="週刊アスキー" title="週刊アスキー" xmlUrl="https://weekly.ascii.jp/rss.xml" htmlUrl="https://weekly.ascii.jp/"/>
             <outline type="rss" text="窓の杜" title="窓の杜" xmlUrl="http://www.forest.impress.co.jp/rss.xml" htmlUrl="http://www.forest.impress.co.jp/"/>
             <outline type="rss" text="はてブ テクノロジー" title="はてブ テクノロジー" xmlUrl="https://b.hatena.ne.jp/hotentry/it.rss" htmlUrl="https://b.hatena.ne.jp/hotentry/it"/>
-```
             <outline type="rss" text="ナイルのマーケティング相談室" title="ナイルのマーケティング相談室" xmlUrl="https://www.seohacks.net/blog/feed/" htmlUrl="https://www.seohacks.net/blog/"/>
             
             <!-- 海外 - フロントエンド -->

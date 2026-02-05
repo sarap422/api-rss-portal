@@ -172,8 +172,14 @@ cPanelのCronジョブに追加：
 
 # RSS取得・スコアリング（6時間毎）
 0 */6 * * * cd /home/[ユーザー名]/api/rss-portal && /home/[ユーザー名]/virtualenv/api/rss-portal/3.11/bin/python cron_job.py >> logs/cron.log 2>&1
+```
 
-# uvicornを再起動
+### 手動でuvicornを再起動する場合
+
+> **注意**: 以下のコマンドはcrontabに追加しないでください。手動でターミナルから実行するものです。
+> `pkill` は意図しないプロセスを停止する可能性があるため、実行前に `ps aux | grep uvicorn` で対象プロセスを確認してください。
+
+```bash
 pkill -u [ユーザー名] -f "uvicorn main:app.*port 8001"
 sleep 2
 /home/[ユーザー名]/api/start_uvicorn.sh

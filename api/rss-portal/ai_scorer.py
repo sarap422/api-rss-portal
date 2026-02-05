@@ -10,7 +10,7 @@ from typing import Optional
 
 import requests
 
-from config import USER_INTERESTS, USER_DISLIKES
+from config import USER_INTERESTS, USER_DISLIKES, SITE_URL
 from database import (
     get_unscored_articles,
     update_article_score,
@@ -110,10 +110,23 @@ def extract_json_from_response(text: str) -> Optional[dict]:
         except json.JSONDecodeError:
             pass
     
-    # 4. { から } までを抽出（ネストされた括弧に対応）
+    # 4. { から } までを抽出（ネストされた括弧に対応、文字列内のブレースを無視）
     brace_count = 0
     start_idx = -1
+    in_string = False
+    escape = False
     for i, char in enumerate(text):
+        if escape:
+            escape = False
+            continue
+        if char == '\\' and in_string:
+            escape = True
+            continue
+        if char == '"':
+            in_string = not in_string
+            continue
+        if in_string:
+            continue
         if char == '{':
             if brace_count == 0:
                 start_idx = i
@@ -126,9 +139,9 @@ def extract_json_from_response(text: str) -> Optional[dict]:
                     return json.loads(json_str)
                 except json.JSONDecodeError:
                     pass
-    
-    # 5. 正規表現でscore と summaryを含むJSONを探す
-    json_match = re.search(r'\{\s*"score"\s*:\s*\d+\s*,\s*"summary"\s*:\s*"[^"]*"\s*\}', text)
+
+    # 5. 正規表現でscore と summaryを含むJSONを探す（エスケープされた引用符に対応）
+    json_match = re.search(r'\{\s*"score"\s*:\s*\d+\s*,\s*"summary"\s*:\s*"(?:[^"\\]|\\.)*"\s*\}', text)
     if json_match:
         try:
             return json.loads(json_match.group())
@@ -158,8 +171,8 @@ def call_openrouter_api(prompt: str) -> Optional[dict]:
     headers = {
         "Authorization": f"Bearer {OPENROUTER_API_KEY}",
         "Content-Type": "application/json",
-        "HTTP-Referer": "https://your-site.com",  # あなたのサイトURL
-        "X-Title": "RSS Portal"  # アプリ名
+        "HTTP-Referer": SITE_URL,
+        "X-Title": "RSS Portal"
     }
     
     payload = {
@@ -245,7 +258,7 @@ def score_articles(limit: int = 20, delay: float = 1.0) -> dict:
         if ai_result and 'score' in ai_result:
             score = int(ai_result['score'])
             score = max(1, min(5, score))  # 1-5に制限
-            summary = ai_result.get('summary', '')[:100]
+            summary = ai_result.get('summary', '')[:130]
             
             update_article_score(article['id'], score, summary)
             result['scored'] += 1
@@ -282,7 +295,7 @@ def score_single_article(article_id: int) -> Optional[int]:
     if ai_result and 'score' in ai_result:
         score = int(ai_result['score'])
         score = max(1, min(5, score))
-        summary = ai_result.get('summary', '')[:100]
+        summary = ai_result.get('summary', '')[:130]
         update_article_score(article_id, score, summary)
         return score
     
