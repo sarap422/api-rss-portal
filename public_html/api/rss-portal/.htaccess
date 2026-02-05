@@ -1,0 +1,28 @@
+# RSS Portal - .htaccess
+# LiteSpeed → uvicorn (port 8001) へのプロキシ設定
+
+RewriteEngine On
+
+# 静的ファイルはそのまま配信
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteRule ^ - [L]
+
+# JSONファイルへの直接アクセス
+RewriteRule ^articles\.json$ output/articles.json [L]
+
+# それ以外はuvicornにプロキシ
+RewriteRule ^(.*)$ http://127.0.0.1:8001/$1 [P,L]
+
+# プロキシ関連ヘッダー
+<IfModule mod_headers.c>
+    RequestHeader set X-Forwarded-Proto "https"
+    Header always set Access-Control-Allow-Origin "*"
+    Header always set Access-Control-Allow-Methods "GET, POST, OPTIONS"
+    Header always set Access-Control-Allow-Headers "Content-Type"
+</IfModule>
+
+# キャッシュ設定
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType application/json "access plus 5 minutes"
+</IfModule>

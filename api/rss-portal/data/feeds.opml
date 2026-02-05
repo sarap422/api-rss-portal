@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<opml version="1.0">
+    <head>
+        <title>RSS Portal Feeds</title>
+    </head>
+    <body>
+        <outline text="Developer" title="Developer">
+            <!-- 日本語 - 総合 -->
+            <outline type="rss" text="CODE-PLUS" title="CODE-PLUS" xmlUrl="https://code-plus.jp/gp/feed/" htmlUrl="https://code-plus.jp/gp"/>
+            <outline type="rss" text="Qiita - 人気の記事" title="Qiita - 人気の記事" xmlUrl="https://qiita.com/popular-items/feed" htmlUrl="https://qiita.com/popular-items"/>
+            <outline type="rss" text="Zennのトレンド" title="Zennのトレンド" xmlUrl="https://zenn.dev/feed" htmlUrl="https://zenn.dev"/>
+            
+            <!-- 日本語 - Web制作 -->
+            <outline type="rss" text="コリス" title="コリス" xmlUrl="https://coliss.com/feed" htmlUrl="https://coliss.com"/>
+            <outline type="rss" text="PhotoshopVIP" title="PhotoshopVIP" xmlUrl="https://photoshopvip.net/feed" htmlUrl="https://photoshopvip.net/"/>
+            <outline type="rss" text="かちびと.net" title="かちびと.net" xmlUrl="https://kachibito.net/feed" htmlUrl="https://kachibito.net"/>
+            <outline type="rss" text="ICS MEDIA" title="ICS MEDIA" xmlUrl="https://ics.media/feed/atom" htmlUrl="https://ics.media/"/>
+            <outline type="rss" text="tedate" title="tedate" xmlUrl="https://tedate.jp/feed" htmlUrl="https://tedate.jp/"/>
+            <outline type="rss" text="BRISK" title="BRISK" xmlUrl="https://b-risk.jp/blog/feed/" htmlUrl="https://b-risk.jp"/>
+            <outline type="rss" text="株式会社オンズ" title="株式会社オンズ" xmlUrl="https://on-ze.com/feed" htmlUrl="https://on-ze.com"/>
+            
+            <!-- 日本語 - AI/SEO -->
+            <outline type="rss" text="ジコログ" title="ジコログ" xmlUrl="https://self-development.info/feed/" htmlUrl="https://self-development.info"/>
+            <outline type="rss" text="npaka" title="npaka" xmlUrl="https://note.com/npaka/rss" htmlUrl="https://note.com/npaka"/>
+            <outline type="rss" text="ギズモード・ジャパン" title="ギズモード・ジャパン" xmlUrl="https://www.gizmodo.jp/index.xml" htmlUrl="https://www.gizmodo.jp/"/>
+            <outline type="rss" text="GIGAZINE" title="GIGAZINE" xmlUrl="https://gigazine.net/news/rss_2.0" htmlUrl="https://gigazine.net/"/>
+            <outline type="rss" text="週刊アスキー" title="週刊アスキー" xmlUrl="https://weekly.ascii.jp/rss.xml" htmlUrl="https://weekly.ascii.jp/"/>
+            <outline type="rss" text="窓の杜" title="窓の杜" xmlUrl="http://www.forest.impress.co.jp/rss.xml" htmlUrl="http://www.forest.impress.co.jp/"/>
+            <outline type="rss" text="はてブ テクノロジー" title="はてブ テクノロジー" xmlUrl="https://b.hatena.ne.jp/hotentry/it.rss" htmlUrl="https://b.hatena.ne.jp/hotentry/it"/>
+            <outline type="rss" text="ナイルのマーケティング相談室" title="ナイルのマーケティング相談室" xmlUrl="https://www.seohacks.net/blog/feed/" htmlUrl="https://www.seohacks.net/blog/"/>
+            
+            <!-- 海外 - フロントエンド -->
+            <outline type="rss" text="CSS-Tricks" title="CSS-Tricks" xmlUrl="https://css-tricks.com/feed/" htmlUrl="https://css-tricks.com"/>
+            <outline type="rss" text="Codrops" title="Codrops" xmlUrl="https://tympanus.net/codrops/feed/" htmlUrl="https://tympanus.net/codrops/"/>
+            <outline type="rss" text="Smashing Magazine" title="Smashing Magazine" xmlUrl="https://www.smashingmagazine.com/feed/" htmlUrl="https://www.smashingmagazine.com"/>
+            <outline type="rss" text="Ahmad Shadeed" title="Ahmad Shadeed" xmlUrl="https://ishadeed.com/feed.xml" htmlUrl="https://ishadeed.com"/>
+            <outline type="rss" text="Josh W Comeau" title="Josh W Comeau" xmlUrl="https://www.joshwcomeau.com/rss.xml" htmlUrl="https://www.joshwcomeau.com"/>
+        </outline>
+    </body>
+</opml>

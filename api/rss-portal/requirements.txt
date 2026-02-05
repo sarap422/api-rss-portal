@@ -1,0 +1,21 @@
+# RSS Portal - Python Dependencies
+# pip install -r requirements.txt
+
+# Web Framework
+fastapi==0.109.2
+uvicorn==0.27.1
+
+# RSS Parsing
+feedparser==6.0.11
+
+# HTTP Requests (for Gemini API)
+requests>=2.32.0,<3.0
+
+# XML Security
+defusedxml>=0.7.1
+
+# Data Validation
+pydantic==2.6.1
+
+# Optional: for development
+# python-dotenv==1.0.1
