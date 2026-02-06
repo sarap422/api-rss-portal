@@ -1,4 +1,4 @@
-# APP RSS Portal
+# APP RSS Portal v1.0.3
 
 <p align="center">
   <strong>AIがRSS記事を自動スコアリングし、興味のある記事だけを表示するパーソナライズ情報ポータル</strong>
@@ -14,10 +14,10 @@
 
 ## 特徴
 
-- **AIスコアリング** - OpenRouter（Gemini 2.0 Flash）が記事を1〜5で評価
+- **AIスコアリング** - Gemini（Gemini 2.0 Flash）が記事を1〜5で評価
 - **パーソナライズ** - 興味分野を設定して、自分好みの記事だけを表示
 - **学習機能** - Like/Dislike/クリック追跡でスコアリング精度が向上
-- **低コスト運用** - 月額約50〜200円（OpenRouter API）
+- **低コスト運用** - 月額約50〜200円（Gemini API）
 - **WordPress連携** - PHPスニペットで簡単に組み込み可能
 - **共用サーバー対応** - cPanel環境（カラフルボックス等）で動作
 
@@ -37,9 +37,9 @@
 │                                                                 │
 │  ┌─────────────┐    ┌─────────────────────────────────────┐    │
 │  │   Cron      │    │         Python FastAPI              │    │
-│  │  (6時間毎)   │───▶│                                     │    │
+│  │  (12時間毎)   │───▶│                                     │    │
 │  └─────────────┘    │  1. RSS取得 (feedparser)            │    │
-│                     │  2. AIスコアリング (OpenRouter)      │    │
+│                     │  2. AIスコアリング (Gemini)      │    │
 │                     │  3. SQLiteに保存                    │    │
 │                     │  4. JSONファイル出力                 │    │
 │                     └─────────────────────────────────────┘    │
@@ -66,7 +66,7 @@
 
 - Python 3.11+
 - cPanel対応の共用サーバー（カラフルボックス、Xserver等）
-- OpenRouter APIキー（無料枠あり）
+- APIキー（無料枠あり）
 - WordPress（フロントエンド表示用）
 
 ---
@@ -113,8 +113,8 @@ pip install -r requirements.txt
 `config.py` を編集：
 
 ```python
-# OpenRouter APIキーを設定
-OPENROUTER_API_KEY = "sk-or-v1-your-api-key-here"
+# APIキーを設定
+API_KEY = "your-gemini-api-key"
 
 # 興味分野をカスタマイズ
 USER_INTERESTS = """
@@ -170,8 +170,8 @@ cPanelのCronジョブに追加：
 # uvicorn自動起動（5分毎）
 */5 * * * * /home/[ユーザー名]/api/start_uvicorn.sh
 
-# RSS取得・スコアリング（6時間毎）
-0 */6 * * * cd /home/[ユーザー名]/api/rss-portal && /home/[ユーザー名]/virtualenv/api/rss-portal/3.11/bin/python cron_job.py >> logs/cron.log 2>&1
+# RSS取得・スコアリング（12時間毎）
+0 */12 * * * cd /home/[ユーザー名]/api/rss-portal && /home/[ユーザー名]/virtualenv/api/rss-portal/3.11/bin/python cron_job.py >> logs/cron.log 2>&1
 ```
 
 ### 手動でuvicornを再起動する場合
@@ -197,8 +197,8 @@ sleep 2
 
 | 項目 | 説明 | デフォルト |
 |------|------|-----------|
-| `OPENROUTER_API_KEY` | OpenRouter APIキー | - |
-| `OPENROUTER_MODEL` | 使用するAIモデル | `google/gemini-2.0-flash-001` |
+| `API_KEY` | APIキー | - |
+| `API_MODEL` | 使用するAIモデル | `gemini-2.0-flash` |
 | `USER_INTERESTS` | 興味のある分野（AIプロンプト用） | - |
 | `USER_DISLIKES` | 興味のない分野（AIプロンプト用） | - |
 | `MIN_SCORE_TO_DISPLAY` | 表示する最低スコア | `3` |
@@ -262,7 +262,7 @@ sleep 2
 
 | 項目 | 費用 |
 |------|------|
-| OpenRouter API | 約50〜200円/月（使用量による） |
+| Gemini API | 約50〜200円/月（使用量による） |
 | サーバー | 既存のWordPressサーバーを利用 |
 
 ※ Gemini 2.0 Flash は非常に安価（1記事あたり約0.07円）
@@ -290,17 +290,12 @@ ps aux | grep uvicorn
 
 `ai_scorer.py` の `delay` パラメータを増やす（例: `3.0`）
 
-### SQLiteファイルの破損
-
-```bash
-mv data/articles.db data/articles.db.corrupted
-python rss_fetcher.py
-python cron_job.py
-```
-
 ### 古い記事をクリア（新しい状態で始めたい場合）
 
 ```bash
+# 古いフィードをクリア
+sqlite3 data/articles.db "DELETE FROM feeds;"
+
 # 古い記事をクリア
 sqlite3 data/articles.db "DELETE FROM articles;"
 sqlite3 data/articles.db "DELETE FROM feedback;"
@@ -309,13 +304,22 @@ python rss_fetcher.py
 python cron_job.py
 ```
 
+### SQLiteファイルの破損
+
+```bash
+mv data/articles.db data/articles.db.corrupted
+python rss_fetcher.py
+python cron_job.py
+```
+
+
 ---
 
 ## 技術スタック
 
 - **バックエンド**: Python, FastAPI, uvicorn
 - **データベース**: SQLite
-- **AI**: OpenRouter (Gemini 2.0 Flash)
+- **AI**: Gemini (Gemini 2.0 Flash)
 - **RSS解析**: feedparser
 - **フロントエンド**: JavaScript (Vanilla)
 
@@ -323,7 +327,7 @@ python cron_job.py
 
 ## 参考リンク
 
-- [OpenRouter](https://openrouter.ai/) - AI API
+- [Gemini API](https://ai.google.dev/) - AI API
 - [FastAPI](https://fastapi.tiangolo.com/) - Pythonフレームワーク
 - [feedparser](https://feedparser.readthedocs.io/) - RSS解析ライブラリ
 

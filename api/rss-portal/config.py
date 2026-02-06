@@ -17,9 +17,9 @@ DATABASE_PATH = DATA_DIR / "articles.db"
 # 出力ファイル（WordPressから読み込む）
 OUTPUT_JSON = OUTPUT_DIR / "articles.json"
 
-# OpenRouter API設定
-OPENROUTER_API_KEY = "sk-or-v1-your-api-key-here"
-OPENROUTER_MODEL = "google/gemini-2.0-flash-001"  # 安価で高速
+# API設定
+API_KEY = "your-api-key-here"
+API_MODEL = "gemini-2.0-flash"
 
 # サイト設定
 SITE_URL = "https://your-site.com"
@@ -85,7 +85,7 @@ ARTICLE_RETENTION_DAYS = 14    # 記事を保持する日数
 MAX_DISPLAY_PER_FEED = 10      # 同一フィードから表示する最大記事数
 
 # Cron実行間隔（参考情報）
-FETCH_INTERVAL_HOURS = 6       # 6時間ごとに取得
+FETCH_INTERVAL_HOURS = 12      # 12時間ごとに取得
 
 # CORS設定
 CORS_ORIGINS = [

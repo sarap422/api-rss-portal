@@ -1,7 +1,7 @@
 <script>
-  (function() {
-    const STYLE = document.createElement('style');
-    STYLE.textContent = `
+(function() {
+const STYLE = document.createElement('style');
+STYLE.textContent = `
 #rss-portal {
 	margin-inline: auto;
 }
@@ -178,7 +178,7 @@ screen and (min-width: 744px) {
 }
 
 #rss-portal .rss-feedback .btn-like.is-liked {
-	background: var(--c-azzurro-300, hsl(240, 73%, 74%));
+	background: var(--c-linkage-300, hsl(240, 73%, 74%));
 	color: #FFF;
 }
 
@@ -187,8 +187,8 @@ screen and (min-width: 744px) {
 	color: #FFF;
 }
 `;
-    document.getElementsByTagName('head')[0].appendChild(STYLE);
-  })();
+document.getElementsByTagName('head')[0].appendChild(STYLE);
+})();
 </script>
 
 <div id="rss-portal" class="rss-container">
@@ -198,7 +198,7 @@ screen and (min-width: 744px) {
 
 <script>
   (function() {
-    const API_URL = '/api/rss-portal';
+    const RSS_API_URL = '/api/rss-portal';
 
     // ローカルストレージから非表示リストを取得
     function getHiddenArticles() {
@@ -239,7 +239,7 @@ screen and (min-width: 744px) {
       }
     }
 
-    fetch(API_URL + '/articles')
+    fetch(RSS_API_URL + '/articles')
       .then(res => {
         if (!res.ok) throw new Error(res.status + ' ' + res.statusText);
         return res.json();

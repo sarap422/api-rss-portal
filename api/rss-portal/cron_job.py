@@ -6,8 +6,8 @@ RSS Portal - Cronバッチスクリプト
 使用方法:
   python cron_job.py
 
-Cron設定例（6時間ごと）:
-  0 */6 * * * cd /path/to/rss-portal && /path/to/python cron_job.py >> /path/to/logs/cron.log 2>&1
+Cron設定例（12時間ごと）:
+  0 */12 * * * cd /path/to/rss-portal && /path/to/python cron_job.py >> /path/to/logs/cron.log 2>&1
 """
 
 import sys
